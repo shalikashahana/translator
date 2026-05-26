@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraVox - Futuristic Translator</title>
+
+    <!-- Google Fonts: Orbitron & Space Grotesk -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'orbitron': ['Orbitron', 'sans-serif'],
+                        'space': ['Space Grotesk', 'sans-serif'],
+                    },
+                    colors: {
+                        'cosmic': '#0B0F19',
+                        'cosmic-light': '#131929',
+                        'neon-cyan': '#00F0FF',
+                        'neon-magenta': '#E040FB',
+                        'neon-purple': '#7C3AED',
+                    },
+                    animation: {
+                        'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
+                        'pulse-cyan': 'pulseCyan 2.5s ease-in-out infinite',
+                        'pulse-magenta': 'pulseMagenta 2.5s ease-in-out infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'scan-line': 'scanLine 8s linear infinite',
+                        'border-cyan-pulse': 'borderCyanPulse 2s ease-in-out infinite',
+                        'border-magenta-pulse': 'borderMagentaPulse 2s ease-in-out infinite',
+                        'rotate-icon': 'rotateIcon 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards',
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%, 100%': { boxShadow: '0 0 20px rgba(0, 240, 255, 0.25), 0 0 40px rgba(0, 240, 255, 0.1)' },
+                            '50%': { boxShadow: '0 0 35px rgba(224, 64, 251, 0.4), 0 0 60px rgba(224, 64, 251, 0.2)' },
+                        },
+                        pulseCyan: {
+                            '0%, 100%': { boxShadow: '0 0 8px rgba(0, 240, 255, 0.3), inset 0 0 8px rgba(0, 240, 255, 0.05)' },
+                            '50%': { boxShadow: '0 0 22px rgba(0, 240, 255, 0.6), inset 0 0 16px rgba(0, 240, 255, 0.12)' },
+                        },
+                        pulseMagenta: {
+                            '0%, 100%': { boxShadow: '0 0 8px rgba(224, 64, 251, 0.3), inset 0 0 8px rgba(224, 64, 251, 0.05)' },
+                            '50%': { boxShadow: '0 0 22px rgba(224, 64, 251, 0.6), inset 0 0 16px rgba(224, 64, 251, 0.12)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-12px)' },
+                        },
+                        scanLine: {
+                            '0%': { transform: 'translateY(-100%)' },
+                            '100%': { transform: 'translateY(800%)' },
+                        },
+                        borderCyanPulse: {
+                            '0%, 100%': { borderColor: 'rgba(0, 240, 255, 0.3)', boxShadow: '0 0 12px rgba(0, 240, 255, 0.2), inset 0 0 8px rgba(0, 240, 255, 0.03)' },
+                            '50%': { borderColor: 'rgba(0, 240, 255, 0.7)', boxShadow: '0 0 28px rgba(0, 240, 255, 0.45), inset 0 0 18px rgba(0, 240, 255, 0.08)' },
+                        },
+                        borderMagentaPulse: {
+                            '0%, 100%': { borderColor: 'rgba(224, 64, 251, 0.3)', boxShadow: '0 0 12px rgba(224, 64, 251, 0.2), inset 0 0 8px rgba(224, 64, 251, 0.03)' },
+                            '50%': { borderColor: 'rgba(224, 64, 251, 0.7)', boxShadow: '0 0 28px rgba(224, 64, 251, 0.45), inset 0 0 18px rgba(224, 64, 251, 0.08)' },
+                        },
+                        rotateIcon: {
+                            '0%': { transform: 'rotate(0deg)' },
+                            '100%': { transform: 'rotate(360deg)' },
+                        },
+                    },
+                },
+            },
+        }
+    </script>
+
+    <style>
+        /* Custom scrollbar for the cosmic theme */
+        textarea::-webkit-scrollbar {
+            width: 5px;
+        }
+        textarea::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 10px;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background: rgba(0, 240, 255, 0.3);
+            border-radius: 10px;
+            transition: background 0.3s;
+        }
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 240, 255, 0.6);
+        }
+
+        /* Starfield background */
+        .starfield {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            background:
+                radial-gradient(1px 1px at 10% 15%, rgba(255, 255, 255, 0.6), transparent),
+                radial-gradient(1px 1px at 25% 35%, rgba(255, 255, 255, 0.5), transparent),
+                radial-gradient(1.5px 1.5px at 40% 20%, rgba(0, 240, 255, 0.5), transparent),
+                radial-gradient(1px 1px at 55% 45%, rgba(255, 255, 255, 0.4), transparent),
+                radial-gradient(1.5px 1.5px at 70% 30%, rgba(224, 64, 251, 0.5), transparent),
+                radial-gradient(1px 1px at 85% 50%, rgba(255, 255, 255, 0.5), transparent),
+                radial-gradient(1px 1px at 15% 60%, rgba(0, 240, 255, 0.4), transparent),
+                radial-gradient(1.5px 1.5px at 30% 75%, rgba(255, 255, 255, 0.5), transparent),
+                radial-gradient(1px 1px at 50% 65%, rgba(224, 64, 251, 0.45), transparent),
+                radial-gradient(1px 1px at 65% 80%, rgba(255, 255, 255, 0.4), transparent),
+                radial-gradient(1.5px 1.5px at 80% 70%, rgba(0, 240, 255, 0.5), transparent),
+                radial-gradient(1px 1px at 90% 85%, rgba(255, 255, 255, 0.5), transparent),
+                radial-gradient(1px 1px at 5% 85%, rgba(224, 64, 251, 0.4), transparent),
+                radial-gradient(1px 1px at 20% 90%, rgba(255, 255, 255, 0.35), transparent),
+                radial-gradient(1.5px 1.5px at 45% 10%, rgba(0, 240, 255, 0.5), transparent),
+                radial-gradient(1px 1px at 75% 15%, rgba(255, 255, 255, 0.4), transparent);
+        }
+
+        /* Subtle scan line effect */
+        .scan-line-overlay {
+            position: fixed;
+            top: -100%;
+            left: 0;
+            width: 100%;
+            height: 120px;
+            pointer-events: none;
+            z-index: 1;
+            background: linear-gradient(to bottom,
+                    transparent 0%,
+                    rgba(0, 240, 255, 0.015) 40%,
+                    rgba(0, 240, 255, 0.03) 50%,
+                    rgba(0, 240, 255, 0.015) 60%,
+                    transparent 100%);
+            animation: scanLine 8s linear infinite;
+        }
+
+        /* Smooth transition for textareas */
+        .cosmic-textarea {
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            resize: none;
+        }
+        .cosmic-textarea:focus {
+            outline: none;
+        }
+
+        /* Select dropdown custom styling */
+        .cosmic-select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2300F0FF' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 16px;
+            padding-right: 40px;
+            cursor: pointer;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .cosmic-select:focus {
+            outline: none;
+        }
+
+        /* Glow dot indicator */
+        .glow-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00F0FF;
+            box-shadow: 0 0 10px #00F0FF, 0 0 25px rgba(0, 240, 255, 0.6), 0 0 50px rgba(0, 240, 255, 0.3);
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+        .glow-dot.translating {
+            background: #E040FB;
+            box-shadow: 0 0 10px #E040FB, 0 0 25px rgba(224, 64, 251, 0.6), 0 0 50px rgba(224, 64, 251, 0.3);
+            animation: pulseGlow 1s ease-in-out infinite;
+        }
+
+        /* Swap button glow */
+        .swap-btn {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .swap-btn:hover {
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.5), 0 0 60px rgba(224, 64, 251, 0.35);
+            transform: scale(1.08);
+        }
+        .swap-btn:active {
+            transform: scale(0.94);
+        }
+        .swap-btn.rotating .swap-icon-svg {
+            animation: rotateIcon 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+        }
+
+        /* Fade-in for translated text */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .fade-in-up {
+            animation: fadeInUp 0.4s ease-out forwards;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .swap-btn {
+                transform: rotate(90deg);
+            }
+            .swap-btn:hover {
+                transform: rotate(90deg) scale(1.08);
+            }
+            .swap-btn:active {
+                transform: rotate(90deg) scale(0.94);
+            }
+            .swap-btn.rotating .swap-icon-svg {
+                animation: rotateIconMobile 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+            }
+        }
+        @keyframes rotateIconMobile {
+            0% {
+                transform: rotate(90deg);
+            }
+            100% {
+                transform: rotate(450deg);
+            }
+        }
+    </style>
+</head>
+<body class="bg-cosmic min-h-screen font-space text-white overflow-x-hidden relative">
+
+    <!-- Starfield background -->
+    <div class="starfield"></div>
+    <!-- Scan line overlay -->
+    <div class="scan-line-overlay"></div>
+
+    <!-- Main Container -->
+    <div class="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 py-8 sm:py-12">
+        <!-- Header -->
+        <header class="text-center mb-8 sm:mb-12">
+            <div class="inline-flex items-center gap-3 mb-2">
+                <!-- Decorative glow dot -->
+                <span class="glow-dot" id="statusDot"></span>
+                <h1 class="font-orbitron text-4xl sm:text-5xl md:text-6xl font-bold tracking-wider"
+                style="background: linear-gradient(135deg, #00F0FF 0%, #E040FB 50%, #00F0FF 100%); background-size: 200% 200%; -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; animation: gradientShift 4s ease-in-out infinite;">
+                AURAVOX
+            </h1>
+            <span class="glow-dot" style="background:#E040FB; box-shadow: 0 0 10px #E040FB, 0 0 25px rgba(224,64,251,0.6), 0 0 50px rgba(224,64,251,0.3);"></span>
+        </div>
+        <p class="font-space text-sm sm:text-base text-slate-400 tracking-widest uppercase letter-spacing-4">
+            Neural Translation Engine
+        </p>
+        <div class="mt-3 h-px w-32 sm:w-48 mx-auto bg-gradient-to-r from-transparent via-neon-cyan/50 to-transparent"></div>
+    </header>
+
+    <!-- Translator Panels -->
+    <div class="w-full max-w-6xl mx-auto relative">
+        <div class="flex flex-col md:flex-row gap-4 md:gap-0 items-stretch relative">
+            <!-- Source Panel -->
+            <div class="flex-1 md:mr-3 z-10">
+                <div class="glass-panel-source rounded-2xl p-5 sm:p-6 h-full flex flex-col transition-all duration-500"
+                style="
+                background: rgba(19, 25, 41, 0.7);
+                backdrop-filter: blur(24px);
+                -webkit-backdrop-filter: blur(24px);
+                border: 1.5px solid rgba(0, 240, 255, 0.25);
+                box-shadow: 0 0 20px rgba(0, 240, 255, 0.1), inset 0 0 20px rgba(0, 240, 255, 0.03);
+            "
+            id="sourcePanel">
+            <!-- Source Header -->
+            <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center gap-2">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#00F0FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="2" y1="12" x2="22" y2="12"/>
+                        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+                    </svg>
+                    <span class="font-orbitron text-xs sm:text-sm font-semibold tracking-wider text-neon-cyan uppercase">Source</span>
+                </div>
+                <span class="text-[10px] sm:text-xs text-slate-500 font-space tracking-wider">INPUT</span>
+            </div>
+            <!-- Source Language Select -->
+            <select id="sourceLang"
+            class="cosmic-select w-full mb-4 px-4 py-2.5 rounded-xl text-sm font-space font-medium text-white
+            bg-slate-800/40 border border-neon-cyan/30
+            hover:border-neon-cyan/60 focus:border-neon-cyan
+            focus:animate-border-cyan-pulse"
+            style="background-color: rgba(15, 23, 42, 0.6);">
+            <option value="en" class="bg-slate-900 text-white">🇬🇧 English</option>
+            <option value="ta" class="bg-slate-900 text-white">🇮🇳 Tamil (தமிழ்)</option>
+            <option value="ml" class="bg-slate-900 text-white">🇮🇳 Malayalam (മലയാളം)</option>
+            <option value="hi" class="bg-slate-900 text-white">🇮🇳 Hindi (हिन्दी)</option>
+            <option value="es" class="bg-slate-900 text-white">🇪🇸 Spanish (Español)</option>
+            <option value="fr" class="bg-slate-900 text-white">🇫🇷 French (Français)</option>
+        </select>
+        <!-- Source Textarea -->
+        <textarea id="sourceText"
+        class="cosmic-textarea flex-1 w-full min-h-[180px] sm:min-h-[220px] px-4 py-3.5 rounded-xl text-base font-space text-white
+        bg-transparent border border-neon-cyan/20
+        placeholder-slate-500/60
+        focus:animate-border-cyan-pulse"
+        placeholder="Type your text here..."
+        style="background: rgba(0,0,0,0.25);"
+    ></textarea>
+    <!-- Character count -->
+    <div class="flex items-center justify-between mt-3">
+        <span class="text-[10px] sm:text-xs text-slate-500 font-space" id="sourceCharCount">0 characters</span>
+        <button onclick="clearSource()"
+        class="text-[10px] sm:text-xs text-slate-500 hover:text-neon-cyan transition-colors font-space tracking-wider uppercase">
+        Clear
+    </button>
+</div>
+</div>
+</div>
+
+<!-- Swap Button -->
+<div class="flex items-center justify-center z-20 md:absolute md:inset-y-0 md:left-1/2 md:-translate-x-1/2 my-2 md:my-0">
+    <button id="swapBtn"
+    class="swap-btn w-12 h-12 sm:w-14 sm:h-14 rounded-full flex items-center justify-center cursor-pointer
+    border-2 border-slate-600/50
+    transition-all duration-400"
+    style="
+    background: rgba(19, 25, 41, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.2), 0 0 40px rgba(224, 64, 251, 0.1);
+    "
+    onclick="swapLanguages()"
+    title="Swap Languages">
+    <span class="swap-icon-svg inline-block transition-transform duration-400">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="url(#swapGradient)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <defs>
+                <linearGradient id="swapGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" style="stop-color:#00F0FF"/>
+                    <stop offset="100%" style="stop-color:#E040FB"/>
+                </linearGradient>
+            </defs>
+            <path d="M7 16V4m0 0L3 8m4-4l4 4"/>
+            <path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
+        </svg>
+    </span>
+</button>
+</div>
+
+<!-- Target Panel -->
+<div class="flex-1 md:ml-3 z-10">
+    <div class="glass-panel-target rounded-2xl p-5 sm:p-6 h-full flex flex-col transition-all duration-500"
+    style="
+    background: rgba(19, 25, 41, 0.7);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1.5px solid rgba(224, 64, 251, 0.25);
+    box-shadow: 0 0 20px rgba(224, 64, 251, 0.1), inset 0 0 20px rgba(224, 64, 251, 0.03);
+"
+id="targetPanel">
+<!-- Target Header -->
+<div class="flex items-center justify-between mb-4">
+    <div class="flex items-center gap-2">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E040FB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+            <path d="M12 2v20M2 12h20"/>
+            <path d="M7 7h10M7 17h10"/>
+        </svg>
+        <span class="font-orbitron text-xs sm:text-sm font-semibold tracking-wider text-neon-magenta uppercase">Translation</span>
+    </div>
+    <span class="text-[10px] sm:text-xs text-slate-500 font-space tracking-wider">OUTPUT</span>
+</div>
+<!-- Target Language Select -->
+<select id="targetLang"
+class="cosmic-select w-full mb-4 px-4 py-2.5 rounded-xl text-sm font-space font-medium text-white
+bg-slate-800/40 border border-neon-magenta/30
+hover:border-neon-magenta/60 focus:border-neon-magenta
+focus:animate-border-magenta-pulse"
+style="background-color: rgba(15, 23, 42, 0.6);">
+<option value="en" class="bg-slate-900 text-white">🇬🇧 English</option>
+<option value="ta" class="bg-slate-900 text-white" selected>🇮🇳 Tamil (தமிழ்)</option>
+<option value="ml" class="bg-slate-900 text-white">🇮🇳 Malayalam (മലയാളം)</option>
+<option value="hi" class="bg-slate-900 text-white">🇮🇳 Hindi (हिन्दी)</option>
+<option value="es" class="bg-slate-900 text-white">🇪🇸 Spanish (Español)</option>
+<option value="fr" class="bg-slate-900 text-white">🇫🇷 French (Français)</option>
+</select>
+<!-- Target Textarea (readonly, displays translation) -->
+<textarea id="targetText"
+class="cosmic-textarea flex-1 w-full min-h-[180px] sm:min-h-[220px] px-4 py-3.5 rounded-xl text-base font-space text-white
+bg-transparent border border-neon-magenta/20
+placeholder-slate-500/60
+focus:animate-border-magenta-pulse"
+placeholder="Translation will appear here..."
+readonly
+style="background: rgba(0,0,0,0.25); cursor: default;"
+></textarea>
+<!-- Status & copy -->
+<div class="flex items-center justify-between mt-3">
+    <span class="text-[10px] sm:text-xs text-slate-500 font-space" id="targetStatus">Ready</span>
+    <button onclick="copyTranslation()"
+    class="text-[10px] sm:text-xs text-slate-500 hover:text-neon-magenta transition-colors font-space tracking-wider uppercase">
+    Copy
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Footer -->
+<footer class="mt-8 sm:mt-10 text-center z-10 relative">
+    <p class="text-[10px] sm:text-xs text-slate-600 font-space tracking-widest uppercase">
+        Powered by Neural Matrix &bull; Real-Time Translation
+    </p>
+    <div class="mt-2 flex items-center justify-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-neon-cyan/60"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-neon-magenta/60"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-neon-cyan/40"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-neon-magenta/40"></span>
+        <span class="w-1.5 h-1.5 rounded-full bg-neon-cyan/60"></span>
+    </div>
+</footer>
+</div>
+
+<script>
+    (function() {
+        // ============ DOM ELEMENTS ============
+        const sourceLangSelect = document.getElementById('sourceLang');
+        const targetLangSelect = document.getElementById('targetLang');
+        const sourceTextarea = document.getElementById('sourceText');
+        const targetTextarea = document.getElementById('targetText');
+        const swapBtn = document.getElementById('swapBtn');
+        const sourceCharCount = document.getElementById('sourceCharCount');
+        const targetStatus = document.getElementById('targetStatus');
+        const statusDot = document.getElementById('statusDot');
+        const sourcePanel = document.getElementById('sourcePanel');
+        const targetPanel = document.getElementById('targetPanel');
+
+        // ============ STATE ============
+        let debounceTimer = null;
+        const DEBOUNCE_DELAY = 500; // ms
+        let isTranslating = false;
+        let lastTranslatedText = '';
+        let lastSourceText = '';
+        let lastSourceLang = 'en';
+        let lastTargetLang = 'ta';
+        let abortController = null;
+
+        // ============ LANGUAGE CODE MAP ============
+        const langNames = {
+            'en': 'English',
+            'ta': 'Tamil',
+            'ml': 'Malayalam',
+            'hi': 'Hindi',
+            'es': 'Spanish',
+            'fr': 'French'
+        };
+
+        // ============ INITIAL STATE ============
+        sourceLangSelect.value = 'en';
+        targetLangSelect.value = 'ta';
+
+        // ============ DEBOUNCE HOOK (Vanilla JS) ============
+        function debounce(fn, delay) {
+            return function(...args) {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    fn.apply(this, args);
+                }, delay);
+            };
+        }
+
+        // ============ TRANSLATION FUNCTION ============
+        async function performTranslation() {
+            const sourceText = sourceTextarea.value.trim();
+            const sourceLang = sourceLangSelect.value;
+            const targetLang = targetLangSelect.value;
+
+            // Update character count
+            sourceCharCount.textContent = `${sourceText.length} character${sourceText.length !== 1 ? 's' : ''}`;
+
+            // If empty, clear target and bail
+            if (!sourceText) {
+                targetTextarea.value = '';
+                targetStatus.textContent = 'Ready';
+                targetStatus.style.color = '';
+                statusDot.classList.remove('translating');
+                lastTranslatedText = '';
+                lastSourceText = '';
+                updatePanelGlow('idle');
+                return;
+            }
+
+            // If same as last translation, skip
+            if (
+                sourceText === lastSourceText &&
+                sourceLang === lastSourceLang &&
+                targetLang === lastTargetLang &&
+                lastTranslatedText
+            ) {
+                targetTextarea.value = lastTranslatedText;
+                targetStatus.textContent = 'Translated';
+                targetStatus.style.color = '#00F0FF';
+                updatePanelGlow('done');
+                return;
+            }
+
+            // Cancel any in-flight request
+            if (abortController) {
+                abortController.abort();
+            }
+            abortController = new AbortController();
+
+            // Set translating state
+            isTranslating = true;
+            targetStatus.textContent = 'Translating...';
+            targetStatus.style.color = '#E040FB';
+            statusDot.classList.add('translating');
+            updatePanelGlow('translating');
+            targetTextarea.style.opacity = '0.6';
+
+            try {
+                const apiUrl =
+                    `https://api.mymemory.translated.net/get?q=${encodeURIComponent(sourceText)}&langpair=${sourceLang}|${targetLang}`;
+
+                const response = await fetch(apiUrl, {
+                    signal: abortController.signal,
+                    headers: {
+                        'Accept': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.responseStatus === 200 && data.responseData) {
+                    let translatedText = data.responseData.translatedText || '';
+
+                    // Clean up the translated text if needed
+                    translatedText = translatedText.trim();
+
+                    if (translatedText) {
+                        targetTextarea.value = translatedText;
+                        targetTextarea.style.opacity = '1';
+                        targetTextarea.classList.add('fade-in-up');
+                        setTimeout(() => targetTextarea.classList.remove('fade-in-up'), 400);
+
+                        lastTranslatedText = translatedText;
+                        lastSourceText = sourceText;
+                        lastSourceLang = sourceLang;
+                        lastTargetLang = targetLang;
+
+                        targetStatus.textContent = 'Translated ✓';
+                        targetStatus.style.color = '#00F0FF';
+                        statusDot.classList.remove('translating');
+                        updatePanelGlow('done');
+                    } else {
+                        // Empty or failed translation
+                        targetTextarea.value = '';
+                        targetTextarea.style.opacity = '1';
+                        targetStatus.textContent = 'No translation available';
+                        targetStatus.style.color = '#f59e0b';
+                        statusDot.classList.remove('translating');
+                        updatePanelGlow('idle');
+                    }
+                } else if (data.responseStatus === 403) {
+                    // Rate limited
+                    targetTextarea.style.opacity = '1';
+                    targetStatus.textContent = 'Rate limited. Try again shortly.';
+                    targetStatus.style.color = '#f59e0b';
+                    statusDot.classList.remove('translating');
+                    updatePanelGlow('error');
+                    console.warn('MyMemory API rate limit reached.');
+                } else {
+                    throw new Error('Unexpected API response');
+                }
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    // Request was aborted, do nothing
+                    console.log('Translation request aborted.');
+                    return;
+                }
+                console.error('Translation error:', error);
+                targetTextarea.style.opacity = '1';
+                targetStatus.textContent = 'Translation failed. Retrying...';
+                targetStatus.style.color = '#ef4444';
+                statusDot.classList.remove('translating');
+                updatePanelGlow('error');
+
+                // Auto-retry once after 1.5 seconds
+                setTimeout(() => {
+                    if (sourceTextarea.value.trim() === sourceText) {
+                        performTranslation();
+                    }
+                }, 1500);
+            } finally {
+                isTranslating = false;
+                abortController = null;
+            }
+        }
+
+        // Debounced version
+        const debouncedTranslate = debounce(performTranslation, DEBOUNCE_DELAY);
+
+        // ============ PANEL GLOW UPDATE ============
+        function updatePanelGlow(state) {
+            const sourceBorder = sourcePanel.style;
+            const targetBorder = targetPanel.style;
+
+            switch (state) {
+                case 'translating':
+                    sourceBorder.borderColor = 'rgba(0, 240, 255, 0.5)';
+                    sourceBorder.boxShadow = '0 0 28px rgba(0, 240, 255, 0.3), inset 0 0 20px rgba(0, 240, 255, 0.05)';
+                    targetBorder.borderColor = 'rgba(224, 64, 251, 0.55)';
+                    targetBorder.boxShadow =
+                        '0 0 28px rgba(224, 64, 251, 0.35), inset 0 0 20px rgba(224, 64, 251, 0.06)';
+                    break;
+                case 'done':
+                    sourceBorder.borderColor = 'rgba(0, 240, 255, 0.35)';
+                    sourceBorder.boxShadow = '0 0 22px rgba(0, 240, 255, 0.2), inset 0 0 14px rgba(0, 240, 255, 0.04)';
+                    targetBorder.borderColor = 'rgba(224, 64, 251, 0.4)';
+                    targetBorder.boxShadow =
+                        '0 0 22px rgba(224, 64, 251, 0.25), inset 0 0 14px rgba(224, 64, 251, 0.05)';
+                    // Fade back to idle after 2 seconds
+                    setTimeout(() => updatePanelGlow('idle'), 2000);
+                    break;
+                case 'error':
+                    sourceBorder.borderColor = 'rgba(239, 68, 68, 0.5)';
+                    sourceBorder.boxShadow = '0 0 20px rgba(239, 68, 68, 0.25)';
+                    targetBorder.borderColor = 'rgba(239, 68, 68, 0.5)';
+                    targetBorder.boxShadow = '0 0 20px rgba(239, 68, 68, 0.25)';
+                    setTimeout(() => updatePanelGlow('idle'), 2500);
+                    break;
+                case 'idle':
+                default:
+                    sourceBorder.borderColor = 'rgba(0, 240, 255, 0.25)';
+                    sourceBorder.boxShadow = '0 0 20px rgba(0, 240, 255, 0.1), inset 0 0 20px rgba(0, 240, 255, 0.03)';
+                    targetBorder.borderColor = 'rgba(224, 64, 251, 0.25)';
+                    targetBorder.boxShadow =
+                        '0 0 20px rgba(224, 64, 251, 0.1), inset 0 0 20px rgba(224, 64, 251, 0.03)';
+                    break;
+            }
+        }
+
+        // ============ EVENT LISTENERS ============
+
+        // Source text input → debounced translation
+        sourceTextarea.addEventListener('input', function() {
+            const text = sourceTextarea.value;
+            sourceCharCount.textContent = `${text.length} character${text.length !== 1 ? 's' : ''}`;
+
+            if (text.trim()) {
+                debouncedTranslate();
+            } else {
+                // Clear immediately if empty
+                clearTimeout(debounceTimer);
+                targetTextarea.value = '';
+                targetStatus.textContent = 'Ready';
+                targetStatus.style.color = '';
+                statusDot.classList.remove('translating');
+                lastTranslatedText = '';
+                lastSourceText = '';
+                updatePanelGlow('idle');
+                targetTextarea.style.opacity = '1';
+            }
+        });
+
+        // Source language change → re-translate
+        sourceLangSelect.addEventListener('change', function() {
+            if (sourceTextarea.value.trim()) {
+                lastTranslatedText = ''; // Invalidate cache
+                performTranslation();
+            }
+        });
+
+        // Target language change → re-translate
+        targetLangSelect.addEventListener('change', function() {
+            if (sourceTextarea.value.trim()) {
+                lastTranslatedText = ''; // Invalidate cache
+                performTranslation();
+            }
+        });
+
+        // ============ SWAP FUNCTIONALITY ============
+        window.swapLanguages = function() {
+            // Add rotation animation
+            swapBtn.classList.add('rotating');
+            setTimeout(() => {
+                swapBtn.classList.remove('rotating');
+            }, 650);
+
+            // Swap language selections
+            const tempSourceLang = sourceLangSelect.value;
+            const tempTargetLang = targetLangSelect.value;
+            sourceLangSelect.value = tempTargetLang;
+            targetLangSelect.value = tempSourceLang;
+
+            // Swap text contents
+            const sourceText = sourceTextarea.value;
+            const targetText = targetTextarea.value;
+            sourceTextarea.value = targetText;
+            targetTextarea.value = sourceText;
+
+            // Update character count
+            sourceCharCount.textContent =
+                `${sourceTextarea.value.length} character${sourceTextarea.value.length !== 1 ? 's' : ''}`;
+
+            // Update internal cache
+            lastSourceText = sourceTextarea.value.trim();
+            lastTranslatedText = targetTextarea.value.trim();
+            lastSourceLang = sourceLangSelect.value;
+            lastTargetLang = targetLangSelect.value;
+
+            // If there's text in the new source, translate it
+            if (sourceTextarea.value.trim()) {
+                lastTranslatedText = ''; // Force re-translation
+                targetStatus.textContent = 'Translating...';
+                targetStatus.style.color = '#E040FB';
+                statusDot.classList.add('translating');
+                updatePanelGlow('translating');
+                performTranslation();
+            } else {
+                targetTextarea.value = '';
+                targetStatus.textContent = 'Ready';
+                targetStatus.style.color = '';
+                statusDot.classList.remove('translating');
+                updatePanelGlow('idle');
+            }
+        };
+
+        // ============ CLEAR SOURCE ============
+        window.clearSource = function() {
+            sourceTextarea.value = '';
+            targetTextarea.value = '';
+            sourceCharCount.textContent = '0 characters';
+            targetStatus.textContent = 'Ready';
+            targetStatus.style.color = '';
+            statusDot.classList.remove('translating');
+            lastTranslatedText = '';
+            lastSourceText = '';
+            updatePanelGlow('idle');
+            targetTextarea.style.opacity = '1';
+            clearTimeout(debounceTimer);
+            sourceTextarea.focus();
+        };
+
+        // ============ COPY TRANSLATION ============
+        window.copyTranslation = function() {
+            const text = targetTextarea.value.trim();
+            if (!text) {
+                // Subtle shake or flash
+                targetStatus.textContent = 'Nothing to copy';
+                targetStatus.style.color = '#f59e0b';
+                setTimeout(() => {
+                    targetStatus.textContent = 'Ready';
+                    targetStatus.style.color = '';
+                }, 1500);
+                return;
+            }
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    targetStatus.textContent = 'Copied! ✓';
+                    targetStatus.style.color = '#00F0FF';
+                    setTimeout(() => {
+                        targetStatus.textContent = 'Translated ✓';
+                        targetStatus.style.color = '#00F0FF';
+                    }, 1800);
+                }).catch(() => {
+                    fallbackCopy(text);
+                });
+            } else {
+                fallbackCopy(text);
+            }
+        };
+
+        function fallbackCopy(text) {
+            const tempTextarea = document.createElement('textarea');
+            tempTextarea.value = text;
+            tempTextarea.style.position = 'fixed';
+            tempTextarea.style.opacity = '0';
+            tempTextarea.style.pointerEvents = 'none';
+            document.body.appendChild(tempTextarea);
+            tempTextarea.select();
+            try {
+                document.execCommand('copy');
+                targetStatus.textContent = 'Copied! ✓';
+                targetStatus.style.color = '#00F0FF';
+                setTimeout(() => {
+                    targetStatus.textContent = 'Translated ✓';
+                    targetStatus.style.color = '#00F0FF';
+                }, 1800);
+            } catch (err) {
+                targetStatus.textContent = 'Copy failed';
+                targetStatus.style.color = '#ef4444';
+                setTimeout(() => {
+                    targetStatus.textContent = 'Translated ✓';
+                    targetStatus.style.color = '#00F0FF';
+                }, 1800);
+            }
+            document.body.removeChild(tempTextarea);
+        }
+
+        // ============ KEYBOARD SHORTCUT: Ctrl+Shift+S to swap ============
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+                e.preventDefault();
+                window.swapLanguages();
+            }
+        });
+
+        // ============ FOCUS GLOW ANIMATIONS FOR TEXTAREAS ============
+        sourceTextarea.addEventListener('focus', function() {
+            sourcePanel.style.borderColor = 'rgba(0, 240, 255, 0.6)';
+            sourcePanel.style.boxShadow = '0 0 32px rgba(0, 240, 255, 0.35), inset 0 0 22px rgba(0, 240, 255, 0.06)';
+            sourcePanel.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+        });
+        sourceTextarea.addEventListener('blur', function() {
+            updatePanelGlow(isTranslating ? 'translating' : 'idle');
+        });
+
+        targetTextarea.addEventListener('focus', function() {
+            targetPanel.style.borderColor = 'rgba(224, 64, 251, 0.6)';
+            targetPanel.style.boxShadow =
+                '0 0 32px rgba(224, 64, 251, 0.35), inset 0 0 22px rgba(224, 64, 251, 0.06)';
+            targetPanel.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+        });
+        targetTextarea.addEventListener('blur', function() {
+            updatePanelGlow(isTranslating ? 'translating' : 'idle');
+        });
+
+        // ============ INITIAL SETUP ============
+        sourceCharCount.textContent = '0 characters';
+        targetStatus.textContent = 'Ready';
+        updatePanelGlow('idle');
+
+        // ============ GRADIENT SHIFT KEYFRAME INJECTION ============
+        const gradientStyle = document.createElement('style');
+        gradientStyle.textContent = `
+            @keyframes gradientShift {
+                0%, 100% { background-position: 0% 50%; }
+                25% { background-position: 100% 0%; }
+                50% { background-position: 100% 100%; }
+                75% { background-position: 0% 100%; }
+            }
+        `;
+        document.head.appendChild(gradientStyle);
+
+        console.log('%c🚀 AuraVox %cNeural Translation Engine %cInitialized',
+            'font-family: Orbitron, sans-serif; font-size: 18px; color: #00F0FF; font-weight: bold;',
+            'font-family: Space Grotesk, sans-serif; font-size: 12px; color: #E040FB;',
+            'color: #64748b; font-size: 10px;');
+        console.log('%cDefault: English → Tamil | Debounce: 500ms | API: MyMemory (Free)',
+            'color: #94a3b8; font-size: 10px;');
+        console.log('%c💡 Tip: Press Ctrl+Shift+S to swap languages instantly',
+            'color: #64748b; font-size: 10px; font-style: italic;');
+    })();
+</script>
+</body>
+</html>
